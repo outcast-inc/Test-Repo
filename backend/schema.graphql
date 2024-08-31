@@ -1,0 +1,1206 @@
+scalar DateTime
+scalar JSON
+scalar Upload
+
+#########################################
+#              ENUMS                    #
+#########################################
+# Role
+enum Role {
+  ADMIN
+  SALES_MANAGER
+  SALES_PERSON
+  SALES_INTERN
+  CLIENT
+}
+
+# Sort Directions
+enum SortDirection {
+  ASC
+  DESC
+}
+
+# Sort Nulls Options
+enum SortNulls {
+  NULLS_FIRST
+  NULLS_LAST
+}
+
+enum UserSortFields {
+  id
+  name
+  email
+  phone
+  jobTitle
+  timezone
+  role
+  createdAt
+  updatedAt
+}
+
+#########################################
+#              UPLOAD                   #
+#########################################
+type FilePath {
+  previewUrl: String!
+}
+
+#########################################
+#              USER                     #
+#########################################
+
+type User {
+    _id: ID!
+    name: String!
+    email: String!
+    phone: String
+    jobTitle: String
+    timezone: String
+    role: Role!
+    avatarUrl: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    createdBy: User
+    updatedBy: User 
+}
+
+#----------------------------------------------------
+# Analytics table 
+#----------------------------------------------------
+#########################################
+#              ANALYTICS                #
+#########################################
+type Analytic {
+  _id: ID!
+  page: String
+  source: String
+  count: Int!
+  ips: [String!]!
+  createdAt: DateTime!
+}
+
+#----------------------------------------------------
+# Client users table 
+#----------------------------------------------------
+#########################################
+#              CLIENT                   #
+#########################################
+
+type ClientUser {
+    _id: ID!
+    firstName: String!
+    lastName: String!
+    userName: String!
+    password: String!
+    email: String!
+    confirmationCode: String
+    confirmationTime: DateTime
+    groups: [ClientInGroup]
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#           CLIENT GROUP Type           #
+#########################################
+
+type ClientGroupType {
+    _id: ID!
+    name: String!
+    minMembers: Int
+    maxMembers: Int
+    groups: [ClientGroup]
+    plans: [Plan]
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#           CLIENT GROUP                #
+#########################################
+
+type ClientGroup {
+    _id: ID!
+    clientGroup: ClientGroupType!
+    inGroup: [ClientInGroup]
+    invoiceDate: DateTime
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#           CLIENT USER GROUP           #
+#########################################
+
+type ClientInGroup {
+    _id: ID!
+    group: ClientGroup!
+    account: ClientUser!
+    isAdmin: Boolean
+    timeAdded: DateTime!
+    timeRemoved: DateTime
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#----------------------------------------------------
+# Software and plans 
+#----------------------------------------------------
+
+#########################################
+#              App                      #
+#########################################
+
+type Software {
+    _id: ID!
+    name: String!
+    details: String!
+    accessLink: String!
+    avatarUrl: String
+    plans: [Plan]
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#              Plan                     #
+#########################################
+
+type Plan {
+    _id: ID!
+    name: String!
+    software: Software!
+    groupType: ClientGroupType!
+    price: Float!
+    optionsIncluded: [OptionsIncluded]
+    includes: [Include]
+    prerequisites: [Prerequisite]
+    isActive: Boolean!
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#              App Options              #
+#########################################
+
+type Options {
+    _id: ID!
+    name: String!
+    optionsIncluded: [OptionsIncluded]
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#              Options Included         #
+#########################################
+
+type OptionsIncluded {
+    _id: ID!
+    plan: Plan!
+    options: Options!
+    createdAt: DateTime
+    updatedAt: DateTime
+    removedAt: DateTime
+}
+
+#########################################
+#              Offer                    #
+#########################################
+
+type Offer {
+    _id: ID!
+    name: String!
+    startDate: DateTime!
+    endDate: DateTime!
+    description: String
+    discountAmount: Float!
+    discountPercentage: Float!
+    durationMonths: Int!
+    durationEndDate: DateTime!
+    includes: [Include]
+    prerequisites: [Prerequisite]
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+#########################################
+#              Include                  #
+#########################################
+
+type Include {
+    _id: ID!
+    offer: Offer!
+    plan: Plan!
+}
+
+#########################################
+#              Prerequisite             #
+#########################################
+
+type Prerequisite {
+    _id: ID!
+    offer: Offer!
+    plan: Plan!
+}
+
+#----------------------------------------------------
+# Subscriptions, plans & payment 
+#----------------------------------------------------
+
+#########################################
+#            Subscriptions              #
+#########################################
+
+type Subscription {
+    _id: ID!
+    clientGroup: ClientGroup
+    trialPeriodStartDate: DateTime
+    trialPeriodEndDate: DateTime
+    subscribeAfterTrial: Boolean
+    currentPlan: Plan
+    offer: Offer
+    offerStartDate: DateTime
+    offerEndDate: DateTime
+    dateSubscribed: DateTime
+    validTo: DateTime
+    dateUnsubscribed: DateTime
+    planHistories: [PlanHistory]
+    invoices: [Invoice]
+    createdAt: DateTime
+}
+
+#########################################
+#              PLAN History             #
+#########################################
+
+type PlanHistory {
+    _id: ID!
+    subscription: Subscription
+    plan: Plan
+    dateStart: DateTime
+    dateEnd: DateTime
+    invoices: [Invoice]
+    createdAt: DateTime
+}
+
+#########################################
+#              Invoice                  #
+#########################################
+
+type Invoice {
+    _id: ID!
+    customerInvoiceData: JSON
+    subscription: Subscription
+    planHistory: PlanHistory
+    startDate: DateTime
+    endDate: DateTime
+    description: String
+    amount: Float
+    createdAt: DateTime
+    dueAt: DateTime
+    paidAt: DateTime
+}
+
+#----------------------------------------------------
+# Services
+#----------------------------------------------------
+
+#########################################
+#            Services                   #
+#########################################
+
+type Service {
+    _id: ID!
+    name: String!
+    description: String!
+    images: [String]
+    slug: String
+    createdBy: User
+    createdAt: DateTime
+}
+
+#----------------------------------------------------
+# Courses
+#----------------------------------------------------
+
+#########################################
+#            Courses                    #
+#########################################
+
+type Course {
+    _id: ID!
+    name: String!
+    description: JSON
+    images: [String]
+    slug: String
+    publish: Boolean
+    createdBy: User
+    createdAt: DateTime
+}
+
+#----------------------------------------------------
+# Courses
+#----------------------------------------------------
+
+#########################################
+#            ContactUs                  #
+#########################################
+
+type ContactUs {
+    _id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    message: String!
+    createdAt: DateTime
+}
+
+#----------------------------------------------------
+# Inputs
+#----------------------------------------------------
+
+input IDFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ID
+  neq: ID
+  gt: ID
+  gte: ID
+  lt: ID
+  lte: ID
+  like: ID
+  notLike: ID
+  iLike: ID
+  notILike: ID
+  in: [ID!]
+  notIn: [ID!]
+}
+
+input StringFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: String
+  neq: String
+  gt: String
+  gte: String
+  lt: String
+  lte: String
+  like: String
+  notLike: String
+  iLike: String
+  notILike: String
+  in: [String!]
+  notIn: [String!]
+}
+
+input FloatFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Float
+  neq: Float
+  gt: Float
+  gte: Float
+  lt: Float
+  lte: Float
+  in: [Float!]
+  notIn: [Float!]
+  between: FloatFieldComparisonBetween
+  notBetween: FloatFieldComparisonBetween
+}
+
+input BooleanFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Boolean,
+  neq: Boolean,
+}
+
+input FloatFieldComparisonBetween {
+  lower: Float!
+  upper: Float!
+}
+
+input IntFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Int
+  neq: Int
+  gt: Int
+  gte: Int
+  lt: Int
+  lte: Int
+  in: [Int!]
+  notIn: [Int!]
+  between: IntFieldComparisonBetween
+  notBetween: IntFieldComparisonBetween
+}
+
+input IntFieldComparisonBetween {
+  lower: Int!
+  upper: Int!
+}
+
+input DateFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: DateTime
+  neq: DateTime
+  gt: DateTime
+  gte: DateTime
+  lt: DateTime
+  lte: DateTime
+  in: [DateTime!]
+  notIn: [DateTime!]
+  between: DateFieldComparisonBetween
+  notBetween: DateFieldComparisonBetween
+}
+
+input DateFieldComparisonBetween {
+  lower: DateTime!
+  upper: DateTime!
+}
+
+input UserRoleFilterComparison {
+  eq: Role
+  neq: Role
+  in: [Role!]
+  notIn: [Role!]
+}
+
+input OffsetPaging {
+  # Limit the number of records returned
+  limit: Int
+
+  # Offset to start returning records from
+  offset: Int
+}
+
+input UserSort {
+  field: UserSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+type OffsetPageInfo {
+  # true if paging forward and there are more records.
+  hasNextPage: Boolean
+
+  # true if paging backwards and there are more records.
+  hasPreviousPage: Boolean
+}
+
+#########################################
+#            USERS                      #
+#########################################
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+}
+
+input CreateOneUserInput {
+  # The record to create
+  user: UserCreateInput!
+}
+
+input UserCreateInput {
+  name: String!
+  email: String!
+  phone: String!
+  password: String!
+  jobTitle: String!
+  timezone: String!
+  role: Role!
+}
+
+input CreateManyUsersInput {
+  # Array of records to create
+  users: [UserCreateInput!]!
+}
+
+input UpdateOneUserInput {
+  # The id of the record to update
+  id: ID!
+
+  # The update to apply.
+  update: UserUpdateInput!
+}
+
+input UserUpdateInput {
+  name: String
+  email: String
+  phone: String
+  jobTitle: String
+  timezone: String
+  role: Role
+}
+
+input UpdateManyUsersInput {
+  # Filter used to find fields to update
+  filter: UserUpdateFilter!
+
+  # The update to apply to all records found using the filter
+  update: UserUpdateInput!
+}
+
+input UserUpdateFilter {
+  and: [UserUpdateFilter!]
+  or: [UserUpdateFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  email: StringFieldComparison
+  phone: StringFieldComparison
+  jobTitle: StringFieldComparison
+  timezone: StringFieldComparison
+  role: UserRoleFilterComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+input DeleteOneUserInput {
+  # The id of the record to delete.
+  id: ID!
+}
+
+input DeleteManyUsersInput {
+  # Filter to find records to delete
+  filter: UserDeleteFilter!
+}
+
+input UserDeleteFilter {
+  and: [UserDeleteFilter!]
+  or: [UserDeleteFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  email: StringFieldComparison
+  phone: StringFieldComparison
+  jobTitle: StringFieldComparison
+  timezone: StringFieldComparison
+  role: UserRoleFilterComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+input UserFilter {
+  and: [UserFilter!]
+  or: [UserFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  email: StringFieldComparison
+  phone: StringFieldComparison
+  jobTitle: StringFieldComparison
+  timezone: StringFieldComparison
+  role: UserRoleFilterComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+  updatedBy: UserFilterUserFilter
+  createdBy: UserFilterUserFilter
+#   deals: UserFilterDealFilter
+#   tasks: UserFilterTaskFilter
+#   events: UserFilterEventFilter
+#   contacts: UserFilterContactFilter
+#   companies: UserFilterCompanyFilter
+}
+
+input UserFilterUserFilter {
+  and: [UserFilterUserFilter!]
+  or: [UserFilterUserFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  email: StringFieldComparison
+  phone: StringFieldComparison
+  jobTitle: StringFieldComparison
+  timezone: StringFieldComparison
+  role: UserRoleFilterComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+#########################################
+#            SERVICE                    #
+#########################################
+
+enum ServiceSortFields {
+  id
+  name
+  slug
+  createdAt
+  updatedAt
+}
+
+input ServiceSort {
+  field: ServiceSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+input CreateOneServiceInput {
+  # The record to create
+  service: ServiceCreateInput!
+}
+
+input ServiceCreateInput {
+  name: String!
+  description: String!
+  images: [String]
+  slug: String
+}
+
+input CreateManyServicesInput {
+  # Array of records to create
+  services: [ServiceCreateInput!]!
+}
+
+input UpdateOneServiceInput {
+  # The id of the record to update
+  id: ID!
+
+  # The update to apply.
+  update: ServiceUpdateInput!
+}
+
+input ServiceUpdateInput {
+  name: String
+  description: String!
+  images: [String]
+  slug: String
+}
+
+input UpdateManyServicesInput {
+  # Filter used to find fields to update
+  filter: ServiceUpdateFilter!
+
+  # The update to apply to all records found using the filter
+  update: ServiceUpdateInput!
+}
+
+input ServiceUpdateFilter {
+  and: [ServiceUpdateFilter!]
+  or: [ServiceUpdateFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  slug: StringFieldComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+input DeleteOneServiceInput {
+  # The id of the record to delete.
+  id: ID!
+}
+
+input DeleteManyServicesInput {
+  # Filter to find records to delete
+  filter: ServiceDeleteFilter!
+}
+
+input ServiceDeleteFilter {
+  and: [ServiceDeleteFilter!]
+  or: [ServiceDeleteFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  slug: StringFieldComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+input ServiceFilter {
+  and: [ServiceFilter!]
+  or: [ServiceFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  slug: StringFieldComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+  updatedBy: UserFilterUserFilter
+  createdBy: UserFilterUserFilter
+}
+
+#########################################
+#            COURSE                     #
+#########################################
+
+enum CourseSortFields {
+  _id
+  name
+  slug
+  createdAt
+  updatedAt
+}
+
+input CourseSort {
+  field: CourseSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+input CreateOneCourseInput {
+  # The record to create
+  course: CourseCreateInput!
+}
+
+input CourseCreateInput {
+  name: String!
+  description: JSON
+  images: [String]
+  slug: String
+}
+
+input CreateManyCoursesInput {
+  # Array of records to create
+  courses: [CourseCreateInput!]!
+}
+
+input UpdateOneCourseInput {
+  # The id of the record to update
+  id: ID!
+
+  # The update to apply.
+  update: CourseUpdateInput!
+}
+
+input CourseUpdateInput {
+  name: String
+  description: JSON!
+  images: [String]
+  slug: String
+}
+
+input UpdateManyCoursesInput {
+  # Filter used to find fields to update
+  filter: CourseUpdateFilter!
+
+  # The update to apply to all records found using the filter
+  update: CourseUpdateInput!
+}
+
+input CourseUpdateFilter {
+  and: [CourseUpdateFilter!]
+  or: [CourseUpdateFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  slug: StringFieldComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+input DeleteOneCourseInput {
+  # The id of the record to delete.
+  id: ID!
+}
+
+input DeleteManyCoursesInput {
+  # Filter to find records to delete
+  filter: CourseDeleteFilter!
+}
+
+input CourseDeleteFilter {
+  and: [CourseDeleteFilter!]
+  or: [CourseDeleteFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  slug: StringFieldComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+}
+
+input CourseFilter {
+  and: [CourseFilter!]
+  or: [CourseFilter!]
+  _id: IDFilterComparison
+  name: StringFieldComparison
+  slug: StringFieldComparison
+  publish: BooleanFieldComparison
+  createdAt: DateFieldComparison
+  updatedAt: DateFieldComparison
+  updatedBy: UserFilterUserFilter
+  createdBy: UserFilterUserFilter
+}
+
+#########################################
+#            ANALYTIC                   #
+#########################################
+
+enum AnalyticSortFields {
+  _id
+  page
+  source
+  count
+  createdAt
+}
+
+input AnalyticSort {
+  field: AnalyticSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+input CreateOneAnalyticInput {
+  analytic: AnalyticCreateInput!
+}
+
+input AnalyticCreateInput {
+  page: String
+  source: String
+  count: Int!
+  ips: [String!]!
+}
+
+input AnalyticFilter {
+  and: [AnalyticFilter!]
+  or: [AnalyticFilter!]
+  _id: IDFilterComparison
+  page: StringFieldComparison
+  source: StringFieldComparison
+  count: IntFieldComparison
+  createdAt: DateFieldComparison
+}
+
+type AnalyticConnection {
+  # Paging information
+  pageInfo: OffsetPageInfo!
+
+  # Array of nodes.
+  nodes: [Analytic!]!
+
+  # Fetch total count of records
+  totalCount: Int!
+}
+
+#########################################
+#            CONTACTUS                  #
+#########################################
+
+enum ContactUsSortFields {
+  _id
+  firstName
+  lastName
+  email
+  createdAt
+}
+
+input ContactUsSort {
+  field: ContactUsSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+input CreateOneContactUsInput {
+  # The record to create
+  contactus: ContactUsCreateInput!
+}
+
+input ContactUsCreateInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  message: String!
+}
+
+input CreateManyContactUssInput {
+  # Array of records to create
+  contactuss: [ContactUsCreateInput!]!
+}
+
+input UpdateOneContactUsInput {
+  # The id of the record to update
+  id: ID!
+
+  # The update to apply.
+  update: ContactUsUpdateInput!
+}
+
+input ContactUsUpdateInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  message: String!
+}
+
+input UpdateManyContactUssInput {
+  # Filter used to find fields to update
+  filter: ContactUsUpdateFilter!
+
+  # The update to apply to all records found using the filter
+  update: ContactUsUpdateInput!
+}
+
+input ContactUsUpdateFilter {
+  and: [ContactUsUpdateFilter!]
+  or: [ContactUsUpdateFilter!]
+  _id: IDFilterComparison
+  firstName: StringFieldComparison
+  lastName: StringFieldComparison
+  email: StringFieldComparison
+  createdAt: DateFieldComparison
+}
+
+input DeleteOneContactUsInput {
+  # The id of the record to delete.
+  id: ID!
+}
+
+input DeleteManyContactUssInput {
+  # Filter to find records to delete
+  filter: ContactUsDeleteFilter!
+}
+
+input ContactUsDeleteFilter {
+  and: [ContactUsDeleteFilter!]
+  or: [ContactUsDeleteFilter!]
+  _id: IDFilterComparison
+  firstName: StringFieldComparison
+  lastName: StringFieldComparison
+  email: StringFieldComparison
+  createdAt: DateFieldComparison
+}
+
+input ContactUsFilter {
+  and: [ContactUsFilter!]
+  or: [ContactUsFilter!]
+  _id: IDFilterComparison
+  firstName: StringFieldComparison
+  lastName: StringFieldComparison
+  email: StringFieldComparison
+  createdAt: DateFieldComparison
+}
+
+#----------------------------------------------------
+# Responses
+#----------------------------------------------------
+
+type AuthResponse {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type UserConnection {
+  # Paging information
+  pageInfo: OffsetPageInfo!
+
+  # Array of nodes.
+  nodes: [User!]!
+
+  # Fetch total count of records
+  totalCount: Int!
+}
+
+type UpdateManyResponse {
+  # The number of records updated.
+  updatedCount: Int!
+}
+
+type UserDeleteResponse {
+  id: ID
+  name: String
+  email: String
+  phone: String
+  jobTitle: String
+  timezone: String
+  role: Role
+  avatarUrl: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type DeleteManyResponse {
+  # The number of records deleted.
+  deletedCount: Int!
+}
+
+#########################################
+#            SERVICE                    #
+#########################################
+
+type ServiceConnection {
+  # Paging information
+  pageInfo: OffsetPageInfo!
+
+  # Array of nodes.
+  nodes: [Service!]!
+
+  # Fetch total count of records
+  totalCount: Int!
+}
+
+type ServiceDeleteResponse {
+  id: ID
+  _id: ID
+  name: String
+  description: String
+  slug: String
+  images: [String]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+#########################################
+#            Course                     #
+#########################################
+
+type CourseConnection {
+  # Paging information
+  pageInfo: OffsetPageInfo!
+
+  # Array of nodes.
+  nodes: [Course!]!
+
+  # Fetch total count of records
+  totalCount: Int!
+}
+
+type CourseDeleteResponse {
+  _id: ID
+  id: ID
+  name: String
+  description: JSON
+  slug: String
+  images: [String]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+#########################################
+#            ContactUs                  #
+#########################################
+
+type ContactUsConnection {
+  # Paging information
+  pageInfo: OffsetPageInfo!
+
+  # Array of nodes.
+  nodes: [ContactUs!]!
+
+  # Fetch total count of records
+  totalCount: Int!
+}
+
+type ContactUsDeleteResponse {
+  _id: ID
+  firstName: String
+  lastName: String
+  email: String
+  message: String
+  createdAt: DateTime
+}
+
+#----------------------------------------------------
+# Querues
+#----------------------------------------------------
+type Query {
+    me: User!
+    user(
+        # The id of the record to find.
+        id: ID!
+    ): User!
+    users(
+        # Limit or page results.
+        paging: OffsetPaging! = { limit: 10 }
+
+        # Specify to filter the records returned.
+        filter: UserFilter! = {}
+
+        # Specify to sort results.
+        sorting: [UserSort!]! = []
+    ): UserConnection!
+    service(
+        id: ID!
+    ): Service!
+    serviceSlug(
+        slug: String!
+    ): Service
+    services(
+        # Limit or page results.
+        paging: OffsetPaging! = { limit: 10 }
+
+        # Specify to filter the records returned.
+        filter: ServiceFilter! = {}
+
+        # Specify to sort results.
+        sorting: [ServiceSort!]! = []
+    ): ServiceConnection!
+    course(
+        id: ID!
+    ): Course!
+    courseSlug(
+        slug: String!
+    ): Course
+    courses(
+        # Limit or page results.
+        paging: OffsetPaging! = { limit: 10 }
+
+        # Specify to filter the records returned.
+        filter: CourseFilter! = {}
+
+        # Specify to sort results.
+        sorting: [CourseSort!]! = []
+    ): CourseConnection!
+
+    analytics(
+        # Limit or page results.
+        paging: OffsetPaging! = { limit: 10 }
+
+        # Specify to filter the records returned.
+        filter: AnalyticFilter! = {}
+
+        # Specify to sort results.
+        sorting: [AnalyticSort!]! = []
+    ): AnalyticConnection!
+
+    contactUs(
+      id: ID!
+    ): ContactUs!
+    contactUss(
+        # Limit or page results.
+        paging: OffsetPaging! = { limit: 10 }
+
+        # Specify to filter the records returned.
+        filter: ContactUsFilter! = {}
+
+        # Specify to sort results.
+        sorting: [ContactUsSort!]! = []
+    ): ContactUsConnection!
+}
+
+type Mutation {
+    login(loginInput: LoginInput!): AuthResponse!
+    refreshToken(refresh_token: String!): AuthResponse!
+    register(registerInput: RegisterInput!): User!
+    createOneUser(input: CreateOneUserInput!): User!
+    createManyUsers(input: CreateManyUsersInput!): [User!]!
+    updateOneUser(input: UpdateOneUserInput!): User!
+    updateManyUsers(input: UpdateManyUsersInput!): UpdateManyResponse!
+    deleteOneUser(input: DeleteOneUserInput!): UserDeleteResponse!
+    deleteManyUsers(input: DeleteManyUsersInput!): DeleteManyResponse!
+    createOneService(input: CreateOneServiceInput!): Service!
+    createManyServices(input: CreateManyServicesInput!): [Service!]!
+    updateOneService(input: UpdateOneServiceInput!): Service!
+    updateManyServices(input: UpdateManyServicesInput!): UpdateManyResponse!
+    deleteOneService(input: DeleteOneServiceInput!): ServiceDeleteResponse!
+    deleteManyServices(input: DeleteManyServicesInput!): DeleteManyResponse!
+    createOneCourse(input: CreateOneCourseInput!): Course!
+    createManyCourses(input: CreateManyCoursesInput!): [Course!]!
+    updateOneCourse(input: UpdateOneCourseInput!): Course!
+    updateManyCourses(input: UpdateManyCoursesInput!): UpdateManyResponse!
+    deleteOneCourse(input: DeleteOneCourseInput!): CourseDeleteResponse!
+    deleteManyCourses(input: DeleteManyCoursesInput!): DeleteManyResponse!
+
+    createOneContactUs(input: CreateOneContactUsInput!): ContactUs!
+    createManyContactUss(input: CreateManyContactUssInput!): [ContactUs!]!
+    updateOneContactUs(input: UpdateOneContactUsInput!): ContactUs!
+    updateManyContactUss(input: UpdateManyContactUssInput!): UpdateManyResponse!
+    deleteOneContactUs(input: DeleteOneContactUsInput!): ContactUsDeleteResponse!
+    deleteManyContactUss(input: DeleteManyContactUssInput!): DeleteManyResponse!
+
+    addAnalytic(input: CreateOneAnalyticInput!): Analytic!
+
+    uploadFile(file: Upload!): FilePath!
+}
